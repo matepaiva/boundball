@@ -118,6 +118,7 @@ var balls = {
 };
 //balls.newBall(color, x, y, size, speed, dx, dy)
 balls.newBall("black", 100, 144, 6, 3, 0.8, 1);
+balls.newBall("black", 100, 144, 6, 4, 0.8, 1);
 
 var bars = {
     content: [],
@@ -228,6 +229,17 @@ bars.newBar({
     height: 6,
     width: 60,
     x: (canvas.width - 60) / 2,
+    y: (canvas.height - 6),
+    orientation: "hor",
+    speed: 6,
+    position: "bottom",
+});
+
+bars.newBar({
+    color: "red",
+    height: 6,
+    width: 60,
+    x: 30,
     y: (canvas.height - 6),
     orientation: "hor",
     speed: 6,
