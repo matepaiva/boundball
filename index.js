@@ -30,6 +30,12 @@ var controls = {
             controls.upPressed = false;
         } else if (e.keyCode == 40) {
             controls.downPressed = false;
+        } else if (e.keyCode == 32) {
+            if (requestId === undefined) {
+                draw();
+            } else {
+                stop();
+            }
         }
     },
 
@@ -56,10 +62,10 @@ var balls = {
     bounds: function (balls) {
         for (var i = 0; i < balls.length; i++) {
             var b = balls[i];
-            if (b.x - b.size < 0 || b.x + b.size > canvas.width){
+            if (b.x - b.size < 0 || b.x + b.size > canvas.width) {
                 //document.location.reload();
-            } 
-            if(b.y - b.size < 0 || b.y + b.size > canvas.height) {
+            }
+            if (b.y - b.size < 0 || b.y + b.size > canvas.height) {
                 //document.location.reload();
             }
         }
@@ -68,15 +74,34 @@ var balls = {
         var bar;
         for (var i = 0; i < balls.length; i++) {
             var b = balls[i];
-            for (var j=0; j<bars.content.length; j++){
+            for (var j = 0; j < bars.content.length; j++) {
                 bar = bars.content[j];
-                if ( (b.x-b.size === bar.x + bar.width || b.x+b.size === bar.x) && bar.orientation === "ver"){
-                    if(b.y >= bar.y && b.y <= bar.y + bar.height){
+                if ((bar.x - (b.x + b.size)) < b.speed * b.dx &&
+                    ((bar.x - (b.x + b.size)) > 0) &&
+                    bar.position === "right") {
+                    b.x += (bar.x - (b.x + b.size));
+                } else if ((((bar.x + bar.width) - (b.x - b.size)) > b.speed * b.dx) &&
+                    (((bar.x + bar.width) - (b.x - b.size)) < 0) &&
+                    bar.position === "left") {
+                    b.x += (bar.x + bar.width) - (b.x - b.size);
+                } else if ((((bar.y + bar.height) - (b.y - b.size)) > b.speed * b.dy) &&
+                    (((bar.y + bar.height) - (b.y - b.size)) < 0) &&
+                    bar.position === "top") {
+                    b.y += (bar.y + bar.height) - (b.y - b.size);
+                } else if (((bar.y) - (b.y + b.size)) < b.speed * b.dy &&
+                    ((bar.y - (b.y + b.size)) > 0) &&
+                    bar.position === "bottom") {
+                    b.y += (bar.y) - (b.y + b.size);
+                }
+
+                if ((b.x - b.size === bar.x + bar.width || b.x + b.size === bar.x) &&
+                    bar.orientation === "ver") {
+                    if (b.y >= bar.y && b.y <= bar.y + bar.height) {
                         b.dx *= -1;
                     }
-                }
-                if ( (b.y-b.size === bar.y + bar.height || b.y+b.size === bar.y) && bar.orientation === "hor"){
-                    if(b.x >= bar.x && b.x <= bar.x + bar.width){
+                } else if ((b.y - b.size === bar.y + bar.height || b.y + b.size === bar.y) && 
+                    bar.orientation === "hor") {
+                    if (b.x >= bar.x && b.x <= bar.x + bar.width) {
                         b.dy *= -1;
                     }
                 }
@@ -92,72 +117,75 @@ var balls = {
     }
 };
 //balls.newBall(color, x, y, size, speed, dx, dy)
-balls.newBall("black", 24, 144, 6, 3, 1, 1);
+balls.newBall("black", 100, 144, 6, 3, 0.8, 1);
+balls.newBall("black", 100, 144, 6, 4, 0.8, 1);
 
 var bars = {
     content: [],
-    Bar: function (color, height, width, x, y, o, s) {
-        this.color = color;
-        this.height = height;
-        this.width = width;
-        this.x = x;
-        this.y = y;
-        this.orientation = o;
-        this.speed = s;
+    Bar: function (obj) {
+        return obj;
     },
     newBar: function (color, height, width, x, y, o, s) {
         var nBar = new bars.Bar(color, height, width, x, y, o, s);
         bars.content.push(nBar);
     },
-    move: function (){
+    move: function () {
         var bar;
-        if (controls.upPressed){
-            for (var i=0; i<bars.content.length; i++){
+        if (controls.upPressed) {
+            for (var i = 0; i < bars.content.length; i++) {
                 bar = bars.content[i];
-                if (bar.orientation == "ver"){
+                if (bar.orientation == "ver") {
                     bar.y -= bar.speed;
-                    if(bar.y === 0){
-                        bars.newBar(bar.color, bar.height, bar.width, bar.x, canvas.height, bar.orientation, bar.speed);
-                    } else if (bar.y < 0-bar.height){
+                    if (bar.y === 0) {
+                        bars.newBar(Object.assign({}, bar, {
+                            y: canvas.height
+                        }));
+                    } else if (bar.y < 0 - bar.height) {
                         bars.content.splice(i, 1);
                     }
                 }
             }
         }
-        if (controls.downPressed){
-            for (var j=0; j<bars.content.length; j++){
+        if (controls.downPressed) {
+            for (var j = 0; j < bars.content.length; j++) {
                 bar = bars.content[j];
-                if (bar.orientation == "ver"){
+                if (bar.orientation == "ver") {
                     bar.y += bar.speed;
-                    if(bar.y+bar.height === canvas.height){
-                        bars.newBar(bar.color, bar.height, bar.width, bar.x, 0-bar.height, bar.orientation, bar.speed);
-                    } else if (bar.y > canvas.height){
+                    if (bar.y + bar.height === canvas.height) {
+                        bars.newBar(Object.assign({}, bar, {
+                            y: 0 - bar.height
+                        }));
+                    } else if (bar.y > canvas.height) {
                         bars.content.splice(j, 1);
                     }
                 }
             }
         }
-        if (controls.leftPressed){
-            for (var g=0; g<bars.content.length; g++){
+        if (controls.leftPressed) {
+            for (var g = 0; g < bars.content.length; g++) {
                 bar = bars.content[g];
-                if (bar.orientation == "hor"){
+                if (bar.orientation == "hor") {
                     bar.x -= bar.speed;
-                    if(bar.x === 0){
-                        bars.newBar(bar.color, bar.height, bar.width, canvas.width, bar.y, bar.orientation, bar.speed);
-                    } else if (bar.x < 0-bar.width){
+                    if (bar.x === 0) {
+                        bars.newBar(Object.assign({}, bar, {
+                            x: canvas.width
+                        }));
+                    } else if (bar.x < 0 - bar.width) {
                         bars.content.splice(g, 1);
                     }
                 }
             }
         }
-        if (controls.rightPressed){
-            for (var h=0; h<bars.content.length; h++){
+        if (controls.rightPressed) {
+            for (var h = 0; h < bars.content.length; h++) {
                 bar = bars.content[h];
-                if (bar.orientation == "hor"){
+                if (bar.orientation == "hor") {
                     bar.x += bar.speed;
-                    if(bar.x + bar.width === canvas.width){
-                        bars.newBar(bar.color, bar.height, bar.width, 0-bar.width, bar.y, bar.orientation, bar.speed);
-                    } else if (bar.x > canvas.width){
+                    if (bar.x + bar.width === canvas.width) {
+                        bars.newBar(Object.assign({}, bar, {
+                            x: 0 - bar.width
+                        }));
+                    } else if (bar.x > canvas.width) {
                         bars.content.splice(h, 1);
                     }
                 }
@@ -165,11 +193,58 @@ var bars = {
         }
     },
 };
-//bars.newBar(color, height, width, x, y, orientation, speed);
-bars.newBar("blue", 60, 6, 0, (canvas.height - 60) / 2, "ver", 6);
-bars.newBar("blue", 60, 6, (canvas.width - 6), (canvas.height - 60) / 2, "ver", 6);
-bars.newBar("red", 6, 60, (canvas.width-60)/2, 0, "hor", 6);
-bars.newBar("red", 6, 60, (canvas.width-60)/2, (canvas.height-6), "hor", 6);
+bars.newBar({
+    color: "blue",
+    height: 60,
+    width: 6,
+    x: 0,
+    y: (canvas.height - 60) / 2,
+    orientation: "ver",
+    speed: 6,
+    position: "left",
+});
+bars.newBar({
+    color: "blue",
+    height: 60,
+    width: 6,
+    x: (canvas.width - 6),
+    y: (canvas.height - 60) / 2,
+    orientation: "ver",
+    speed: 6,
+    position: "right",
+});
+bars.newBar({
+    color: "red",
+    height: 6,
+    width: 60,
+    x: (canvas.width - 60) / 2,
+    y: 0,
+    orientation: "hor",
+    speed: 6,
+    position: "top",
+});
+
+bars.newBar({
+    color: "red",
+    height: 6,
+    width: 60,
+    x: (canvas.width - 60) / 2,
+    y: (canvas.height - 6),
+    orientation: "hor",
+    speed: 6,
+    position: "bottom",
+});
+
+bars.newBar({
+    color: "red",
+    height: 6,
+    width: 60,
+    x: 30,
+    y: (canvas.height - 6),
+    orientation: "hor",
+    speed: 6,
+    position: "bottom",
+});
 
 function drawBars(bars) {
     for (var i = 0; i < bars.length; i++) {
@@ -204,12 +279,12 @@ function draw() {
     drawBars(bars.content);
     bars.move();
 
-    requestId=requestAnimationFrame(draw);
+    requestId = requestAnimationFrame(draw);
 }
 
 draw();
 
-function stop(){
+function stop() {
     if (requestId) {
         window.cancelAnimationFrame(requestId);
         requestId = undefined;
