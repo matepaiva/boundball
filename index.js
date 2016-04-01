@@ -1,5 +1,4 @@
-/*jslint browser:true */
-
+/* jslint browser: true */
 var requestId;
 
 var canvas = document.getElementById("bb");
@@ -99,7 +98,7 @@ var balls = {
                     if (b.y >= bar.y && b.y <= bar.y + bar.height) {
                         b.dx *= -1;
                     }
-                } else if ((b.y - b.size === bar.y + bar.height || b.y + b.size === bar.y) && 
+                } else if ((b.y - b.size === bar.y + bar.height || b.y + b.size === bar.y) &&
                     bar.orientation === "hor") {
                     if (b.x >= bar.x && b.x <= bar.x + bar.width) {
                         b.dy *= -1;
@@ -131,67 +130,55 @@ var bars = {
     },
     move: function () {
         var bar;
-        if (controls.upPressed) {
-            for (var i = 0; i < bars.content.length; i++) {
-                bar = bars.content[i];
-                if (bar.orientation == "ver") {
-                    bar.y -= bar.speed;
-                    if (bar.y === 0) {
-                        bars.newBar(Object.assign({}, bar, {
-                            y: canvas.height
-                        }));
-                    } else if (bar.y < 0 - bar.height) {
-                        bars.content.splice(i, 1);
-                    }
+
+        for (var i = 0; i < bars.content.length; i++) {
+            bar = bars.content[i];
+
+            if (controls.upPressed && bar.orientation == "ver") {
+                bar.y -= bar.speed;
+                if (bar.y === 0) {
+                    bars.newBar(Object.assign({}, bar, {
+                        y: canvas.height
+                    }));
+                } else if (bar.y < 0 - bar.height) {
+                    bars.content.splice(i, 1);
+                }
+            }
+
+            if (controls.downPressed && bar.orientation == "ver") {
+                bar.y += bar.speed;
+                if (bar.y + bar.height === canvas.height) {
+                    bars.newBar(Object.assign({}, bar, {
+                        y: 0 - bar.height
+                    }));
+                } else if (bar.y > canvas.height) {
+                    bars.content.splice(i, 1);
+                }
+            }
+
+            if (controls.leftPressed && bar.orientation == "hor") {
+                bar.x -= bar.speed;
+                if (bar.x === 0) {
+                    bars.newBar(Object.assign({}, bar, {
+                        x: canvas.width
+                    }));
+                } else if (bar.x < 0 - bar.width) {
+                    bars.content.splice(i, 1);
+                }
+            }
+
+            if (controls.rightPressed && bar.orientation == "hor") {
+                bar.x += bar.speed;
+                if (bar.x + bar.width === canvas.width) {
+                    bars.newBar(Object.assign({}, bar, {
+                        x: 0 - bar.width
+                    }));
+                } else if (bar.x > canvas.width) {
+                    bars.content.splice(i, 1);
                 }
             }
         }
-        if (controls.downPressed) {
-            for (var j = 0; j < bars.content.length; j++) {
-                bar = bars.content[j];
-                if (bar.orientation == "ver") {
-                    bar.y += bar.speed;
-                    if (bar.y + bar.height === canvas.height) {
-                        bars.newBar(Object.assign({}, bar, {
-                            y: 0 - bar.height
-                        }));
-                    } else if (bar.y > canvas.height) {
-                        bars.content.splice(j, 1);
-                    }
-                }
-            }
-        }
-        if (controls.leftPressed) {
-            for (var g = 0; g < bars.content.length; g++) {
-                bar = bars.content[g];
-                if (bar.orientation == "hor") {
-                    bar.x -= bar.speed;
-                    if (bar.x === 0) {
-                        bars.newBar(Object.assign({}, bar, {
-                            x: canvas.width
-                        }));
-                    } else if (bar.x < 0 - bar.width) {
-                        bars.content.splice(g, 1);
-                    }
-                }
-            }
-        }
-        if (controls.rightPressed) {
-            for (var h = 0; h < bars.content.length; h++) {
-                bar = bars.content[h];
-                if (bar.orientation == "hor") {
-                    bar.x += bar.speed;
-                    if (bar.x + bar.width === canvas.width) {
-                        bars.newBar(Object.assign({}, bar, {
-                            x: 0 - bar.width
-                        }));
-                    } else if (bar.x > canvas.width) {
-                        bars.content.splice(h, 1);
-                    }
-                }
-            }
-        }
-    },
+    }
 };
 bars.newBar({
     color: "blue",
